@@ -1,0 +1,722 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Donne's Quest</title>
+  <style>
+    :root{
+      --bg:#0b1020;
+      --ink:#e8eefc;
+      --muted:#a9b7ff;
+      --line:rgba(169,183,255,.18);
+      --accent:#f6c453;
+      --good:#6ee7b7;
+      --bad:#fda4af;
+      --r:22px;
+      --shadow: 0 18px 60px rgba(0,0,0,.35);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      background: radial-gradient(1000px 700px at 10% 10%, rgba(246,196,83,.14), transparent 55%),
+                  radial-gradient(900px 650px at 90% 20%, rgba(109,40,217,.14), transparent 52%),
+                  var(--bg);
+      color:var(--ink);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      display:grid;
+      place-items:center;
+      padding:16px;
+    }
+
+    .app{
+      width:min(980px, 100%);
+      background: rgba(18,26,52,.72);
+      border:1px solid var(--line);
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      position:relative;
+    }
+
+    header{
+      padding:18px 18px 12px 18px;
+      border-bottom:1px solid rgba(169,183,255,.14);
+      display:flex;
+      gap:14px;
+      align-items:flex-end;
+      justify-content:space-between;
+      flex-wrap:wrap;
+    }
+
+    /* GIANT TITLE + CROWNED D */
+    .titleRow{display:flex;flex-direction:column;gap:6px}
+    h1{
+      margin:0;
+      font-size:58px;
+      letter-spacing:1px;
+      font-weight:1000;
+      line-height:1.02;
+      text-shadow: 0 14px 38px rgba(0,0,0,.35);
+    }
+    .crownedD{
+      position:relative;
+      display:inline-block;
+      padding-right:2px;
+    }
+    .crown{
+      position:absolute;
+      left:4px;
+      top:-18px;
+      font-size:28px;
+      transform: rotate(-10deg);
+      filter: drop-shadow(0 10px 18px rgba(0,0,0,.35));
+      pointer-events:none;
+    }
+    .sub{
+      margin:0;
+      color:var(--muted);
+      font-size:14px;
+      font-weight:700;
+    }
+
+    .hud{
+      display:flex;gap:10px;align-items:center;flex-wrap:wrap;
+      color:var(--muted);font-size:13px;
+    }
+    .pill{
+      padding:8px 12px;
+      border-radius:999px;
+      background: rgba(11,16,32,.55);
+      border:1px solid rgba(169,183,255,.18);
+    }
+    .pill b{color:var(--ink)}
+    main{padding:18px}
+
+    .card{
+      background: rgba(11,16,32,.50);
+      border:1px solid rgba(169,183,255,.16);
+      border-radius: var(--r);
+      padding:18px;
+      display:grid;
+      gap:14px;
+    }
+
+    .labelRow{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .type{
+      display:inline-flex;
+      gap:8px;
+      align-items:center;
+      padding:7px 10px;
+      border-radius:999px;
+      background: rgba(246,196,83,.12);
+      border:1px solid rgba(246,196,83,.35);
+      font-weight:900;
+      letter-spacing:.5px;
+      font-size:13px;
+    }
+    .hint{
+      color:var(--muted);
+      font-size:13px;
+    }
+
+    .pictureWrap{
+      position:relative;
+      display:grid;
+      place-items:center;
+      min-height:260px;
+      border-radius: calc(var(--r) - 6px);
+      border:1px dashed rgba(169,183,255,.22);
+      background:
+        radial-gradient(700px 260px at 50% 40%, rgba(169,183,255,.10), transparent 55%),
+        rgba(15,24,54,.35);
+      overflow:hidden;
+    }
+    .picture{
+      font-size:140px;
+      line-height:1;
+      filter: drop-shadow(0 18px 34px rgba(0,0,0,.35));
+      transform: translateZ(0);
+    }
+
+    .answerBox{
+      padding:14px;
+      border-radius: calc(var(--r) - 6px);
+      border:1px solid rgba(169,183,255,.16);
+      background: rgba(15,24,54,.40);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+    .answer{
+      font-size:36px;
+      font-weight:950;
+      letter-spacing:2px;
+      min-height:44px;
+      word-break:break-word;
+    }
+    .status{
+      font-size:14px;
+      color:var(--muted);
+    }
+
+    .tiles{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      justify-content:center;
+      padding:8px 0 2px 0;
+    }
+    .tile{
+      cursor:pointer;
+      user-select:none;
+      font-size:36px;
+      font-weight:950;
+      letter-spacing:1px;
+      padding:12px 18px;
+      border-radius:16px;
+      background: rgba(18,26,52,.78);
+      border:1px solid rgba(169,183,255,.18);
+      box-shadow: 0 10px 24px rgba(0,0,0,.25);
+      transition: transform .06s ease, border-color .12s ease, background .12s ease, opacity .12s ease;
+    }
+    .tile:hover{border-color:rgba(246,196,83,.55)}
+    .tile:active{transform: translateY(1px)}
+    .tile.used{
+      opacity:.35;
+      pointer-events:none;
+      transform: scale(.98);
+    }
+
+    .controls{
+      display:flex;gap:10px;justify-content:center;flex-wrap:wrap;
+      margin-top:6px;
+    }
+    .btn{
+      cursor:pointer;
+      padding:10px 14px;
+      border-radius:14px;
+      border:1px solid rgba(169,183,255,.18);
+      background: rgba(18,26,52,.70);
+      color:var(--ink);
+      font-weight:900;
+      font-size:14px;
+      transition: transform .06s ease, border-color .12s ease;
+    }
+    .btn:hover{border-color:rgba(246,196,83,.55)}
+    .btn:active{transform: translateY(1px)}
+    .btn.good{background: rgba(110,231,183,.12);border-color:rgba(110,231,183,.45)}
+    .btn.warn{background: rgba(253,164,175,.10);border-color:rgba(253,164,175,.45)}
+    .btn.accent{background: rgba(246,196,83,.12);border-color:rgba(246,196,83,.45)}
+
+    /* FIREWORKS */
+    .particle{
+      position:absolute;
+      width:12px;height:12px;
+      border-radius:999px;
+      opacity:0;
+      pointer-events:none;
+      transform: translate(-50%,-50%) scale(1);
+      filter: drop-shadow(0 10px 18px rgba(0,0,0,.25));
+    }
+    .spark{ border-radius:4px; }
+    .boom .particle{
+      animation: fire 1100ms cubic-bezier(.12,.78,.18,1) forwards;
+    }
+    @keyframes fire{
+      0%{opacity:0;transform: translate(var(--x0), var(--y0)) scale(.6)}
+      12%{opacity:1}
+      100%{opacity:0;transform: translate(var(--x1), var(--y1)) scale(1.35)}
+    }
+
+    .ring{
+      position:absolute;
+      left:50%; top:50%;
+      width:20px; height:20px;
+      border-radius:999px;
+      border:3px solid rgba(246,196,83,.75);
+      transform: translate(-50%,-50%) scale(.2);
+      opacity:0;
+      pointer-events:none;
+      filter: drop-shadow(0 10px 22px rgba(0,0,0,.25));
+    }
+    .boom .ring{ animation: ring 900ms ease-out forwards; }
+    @keyframes ring{
+      0%{opacity:0;transform: translate(-50%,-50%) scale(.2)}
+      20%{opacity:.95}
+      100%{opacity:0;transform: translate(-50%,-50%) scale(8.5)}
+    }
+    .ring.r2{ border-color: rgba(110,231,183,.75); animation-duration: 1000ms; }
+    .ring.r3{ border-color: rgba(169,183,255,.75); animation-duration: 1150ms; }
+
+    /* Win overlay */
+    .winOverlay{
+      position:absolute;
+      inset:0;
+      display:grid;
+      place-items:center;
+      pointer-events:none;
+      opacity:0;
+      transform: scale(.98);
+      transition: opacity .15s ease, transform .15s ease;
+      background: radial-gradient(900px 500px at 50% 40%, rgba(246,196,83,.16), transparent 55%);
+    }
+    .winOverlay.show{
+      opacity:1;
+      transform: scale(1);
+    }
+    .winText{
+      text-align:center;
+      padding:18px 22px;
+      border-radius:20px;
+      background: rgba(11,16,32,.55);
+      border:1px solid rgba(169,183,255,.22);
+      box-shadow: 0 18px 60px rgba(0,0,0,.35);
+    }
+    .winText .big{
+      font-size:56px;
+      font-weight:950;
+      letter-spacing:.5px;
+      text-shadow: 0 14px 36px rgba(0,0,0,.35);
+    }
+    .winText .small{
+      margin-top:6px;
+      font-size:16px;
+      color:var(--muted);
+      font-weight:800;
+    }
+
+    /* Success wiggle */
+    .success{
+      animation: wig 520ms ease-out;
+      border-color: rgba(110,231,183,.55) !important;
+    }
+    @keyframes wig{
+      0%{transform: scale(1)}
+      35%{transform: scale(1.03) rotate(-1deg)}
+      70%{transform: scale(1.02) rotate(1deg)}
+      100%{transform: scale(1)}
+    }
+
+    footer{
+      padding:14px 18px;
+      border-top:1px solid rgba(169,183,255,.14);
+      color:var(--muted);
+      font-size:12px;
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    @media (max-width:720px){
+      h1{font-size:44px}
+      .crown{top:-16px;font-size:24px}
+    }
+    @media (max-width:560px){
+      h1{font-size:38px}
+      .picture{font-size:110px}
+      .tile{font-size:30px;padding:10px 14px}
+      .answer{font-size:30px}
+      .winText .big{font-size:42px}
+      .crown{top:-14px;font-size:22px}
+    }
+  </style>
+</head>
+<body>
+  <div class="app" id="app">
+    <header>
+      <div class="titleRow">
+        <h1>
+          <span class="crownedD">
+            <span class="crown" aria-hidden="true">👑</span>
+            D
+          </span>onne’s Quest
+        </h1>
+        <div class="sub">Tap the scrambled letters. Spell it right… and it turns into fireworks. 🎆</div>
+      </div>
+
+      <div class="hud">
+        <div class="pill">Score: <b id="score">0</b></div>
+        <div class="pill">Streak: <b id="streak">0</b></div>
+        <button class="btn warn" id="reset">Reset</button>
+      </div>
+    </header>
+
+    <main>
+      <div class="card" id="card">
+        <div class="labelRow">
+          <div class="type" id="typeBadge">🐾 ANIMAL</div>
+          <div class="hint" id="hint">Spell what you see.</div>
+        </div>
+
+        <div class="pictureWrap" id="pictureWrap">
+          <div class="picture" id="picture">🐶</div>
+        </div>
+
+        <div class="answerBox" id="answerBox">
+          <div class="answer" id="answer">_ _ _</div>
+          <div class="status" id="status">Tap letters to build the word.</div>
+        </div>
+
+        <div class="tiles" id="tiles"></div>
+
+        <div class="controls">
+          <button class="btn" id="back">Back</button>
+          <button class="btn accent" id="shuffle">Shuffle</button>
+          <button class="btn" id="clear">Clear</button>
+          <button class="btn good" id="skip">Skip</button>
+        </div>
+      </div>
+    </main>
+
+    <footer>
+      <div>Tip: keep it fun. End on a win.</div>
+      <div>Offline, no logins, no pressure.</div>
+    </footer>
+
+    <div class="winOverlay" id="winOverlay" aria-hidden="true">
+      <div class="winText">
+        <div class="big">Good job Donne!</div>
+        <div class="small">You nailed it. 🎉</div>
+      </div>
+    </div>
+  </div>
+
+<script>
+(() => {
+  const $ = (s) => document.querySelector(s);
+
+  const UI = {
+    winOverlay: $("#winOverlay"),
+    score: $("#score"),
+    streak: $("#streak"),
+    reset: $("#reset"),
+    card: $("#card"),
+    typeBadge: $("#typeBadge"),
+    hint: $("#hint"),
+    pictureWrap: $("#pictureWrap"),
+    picture: $("#picture"),
+    answerBox: $("#answerBox"),
+    answer: $("#answer"),
+    status: $("#status"),
+    tiles: $("#tiles"),
+    back: $("#back"),
+    shuffle: $("#shuffle"),
+    clear: $("#clear"),
+    skip: $("#skip"),
+  };
+
+  const STORE = "donnes_quest_v4_crown";
+
+  const BANK = [
+    { type:"ANIMAL", icon:"🐶", word:"DOG" },
+    { type:"ANIMAL", icon:"🐱", word:"CAT" },
+    { type:"ANIMAL", icon:"🦊", word:"FOX" },
+    { type:"ANIMAL", icon:"🐸", word:"FROG" },
+    { type:"ANIMAL", icon:"🐢", word:"TURTLE" },
+    { type:"ANIMAL", icon:"🦁", word:"LION" },
+    { type:"ANIMAL", icon:"🐼", word:"PANDA" },
+    { type:"ANIMAL", icon:"🐬", word:"DOLPHIN" },
+
+    { type:"COLOR", icon:"🟥", word:"RED" },
+    { type:"COLOR", icon:"🟦", word:"BLUE" },
+    { type:"COLOR", icon:"🟩", word:"GREEN" },
+    { type:"COLOR", icon:"🟨", word:"YELLOW" },
+    { type:"COLOR", icon:"🟪", word:"PURPLE" },
+    { type:"COLOR", icon:"⬛", word:"BLACK" },
+    { type:"COLOR", icon:"⬜", word:"WHITE" },
+
+    { type:"NUMBER", icon:"1️⃣", word:"ONE" },
+    { type:"NUMBER", icon:"2️⃣", word:"TWO" },
+    { type:"NUMBER", icon:"3️⃣", word:"THREE" },
+    { type:"NUMBER", icon:"4️⃣", word:"FOUR" },
+    { type:"NUMBER", icon:"5️⃣", word:"FIVE" },
+
+    { type:"FOOD", icon:"🍎", word:"APPLE" },
+    { type:"FOOD", icon:"🍕", word:"PIZZA" },
+    { type:"FOOD", icon:"🍪", word:"COOKIE" },
+    { type:"FOOD", icon:"🍩", word:"DONUT" },
+    { type:"FOOD", icon:"🍫", word:"CHOCOLATE" },
+    { type:"FOOD", icon:"🍬", word:"CANDY" },
+    { type:"FOOD", icon:"🍓", word:"STRAWBERRY" },
+  ];
+
+  const TYPE_BADGE = {
+    ANIMAL:"🐾 ANIMAL",
+    COLOR:"🎨 COLOR",
+    NUMBER:"🔢 NUMBER",
+    FOOD:"🍽️ FOOD",
+  };
+
+  let state = load() || {
+    score: 0,
+    streak: 0,
+    order: shuffle([...Array(BANK.length).keys()]),
+    idx: 0,
+  };
+
+  let current = null;
+  let scrambled = [];
+  let used = [];
+  let built = "";
+
+  boot();
+
+  function boot(){
+    UI.reset.addEventListener("click", () => {
+      if (!confirm("Reset score and start over?")) return;
+      state = { score:0, streak:0, order: shuffle([...Array(BANK.length).keys()]), idx:0 };
+      save();
+      next(true);
+    });
+
+    UI.back.addEventListener("click", () => prev());
+    UI.shuffle.addEventListener("click", () => reshuffle());
+    UI.clear.addEventListener("click", () => clearBuilt());
+    UI.skip.addEventListener("click", () => {
+      state.streak = 0;
+      save();
+      next(true);
+    });
+
+    next(true);
+  }
+
+  function next(first=false){
+    if (!first) state.idx++;
+    if (state.idx >= state.order.length){
+      state.order = shuffle([...Array(BANK.length).keys()]);
+      state.idx = 0;
+    }
+    current = BANK[state.order[state.idx]];
+    built = "";
+    used = [];
+    scrambled = scrambleLetters(current.word);
+    render();
+    save();
+  }
+
+  function prev(){
+    if (state.idx <= 0) return;
+    state.idx--;
+    current = BANK[state.order[state.idx]];
+    built = "";
+    used = [];
+    scrambled = scrambleLetters(current.word);
+    render();
+    save();
+  }
+
+  function reshuffle(){
+    scrambled = shuffle(scrambled.map((c,i)=>({c, i}))).map(x=>x.c);
+    used = [];
+    built = "";
+    render();
+  }
+
+  function clearBuilt(){
+    used = [];
+    built = "";
+    render();
+  }
+
+  function render(){
+    UI.score.textContent = String(state.score);
+    UI.streak.textContent = String(state.streak);
+
+    UI.typeBadge.textContent = TYPE_BADGE[current.type] || current.type;
+    UI.picture.textContent = current.icon;
+
+    UI.hint.textContent = "Spell what you see.";
+    UI.status.textContent = "Tap letters to build the word.";
+
+    const targetLen = current.word.length;
+    const display = built
+      ? built.split("").join(" ")
+      : Array.from({length: targetLen}, () => "_").join(" ");
+
+    UI.answer.textContent = display;
+
+    UI.tiles.innerHTML = "";
+    scrambled.forEach((ch, idx) => {
+      const b = document.createElement("button");
+      b.className = "tile" + (used.includes(idx) ? " used" : "");
+      b.type = "button";
+      b.textContent = ch;
+      b.addEventListener("click", () => onTile(idx));
+      UI.tiles.appendChild(b);
+    });
+  }
+
+  function onTile(idx){
+    if (used.includes(idx)) return;
+
+    used.push(idx);
+    built += scrambled[idx];
+    UI.answer.textContent = built.split("").join(" ");
+
+    if (built.length > current.word.length){
+      state.streak = 0;
+      save();
+      flashBad("Too many letters. Try again.");
+      clearBuilt();
+      return;
+    }
+
+    if (built.length === current.word.length){
+      if (built === current.word){
+        state.score += 1;
+        state.streak += 1;
+        save();
+        winFireworks();
+      } else {
+        state.streak = 0;
+        save();
+        flashBad("Close! Let’s try again.");
+        setTimeout(() => clearBuilt(), 450);
+      }
+    } else {
+      renderTilesOnly();
+    }
+  }
+
+  function renderTilesOnly(){
+    [...UI.tiles.children].forEach((btn, idx) => {
+      btn.classList.toggle("used", used.includes(idx));
+    });
+  }
+
+  function flashBad(msg){
+    UI.status.textContent = msg;
+    UI.answerBox.style.borderColor = "rgba(253,164,175,.55)";
+    setTimeout(() => {
+      UI.answerBox.style.borderColor = "rgba(169,183,255,.16)";
+      UI.status.textContent = "Tap letters to build the word.";
+    }, 650);
+  }
+
+  function showWinOverlay(){
+    UI.winOverlay.classList.add("show");
+    clearTimeout(showWinOverlay._t);
+    showWinOverlay._t = setTimeout(() => {
+      UI.winOverlay.classList.remove("show");
+    }, 850);
+  }
+
+  function winFireworks(){
+    UI.card.classList.add("success");
+    setTimeout(() => UI.card.classList.remove("success"), 520);
+
+    UI.status.textContent = "YES!! FIREWORKS!! 🎆";
+    UI.answerBox.style.borderColor = "rgba(110,231,183,.55)";
+
+    fireworks(UI.pictureWrap);
+    showWinOverlay();
+
+    setTimeout(() => {
+      UI.answerBox.style.borderColor = "rgba(169,183,255,.16)";
+      next();
+    }, 980);
+  }
+
+  function fireworks(container){
+    container.querySelectorAll(".particle,.ring").forEach(n => n.remove());
+    container.classList.remove("boom");
+
+    const r1 = document.createElement("div"); r1.className="ring";
+    const r2 = document.createElement("div"); r2.className="ring r2";
+    const r3 = document.createElement("div"); r3.className="ring r3";
+    container.appendChild(r1); container.appendChild(r2); container.appendChild(r3);
+
+    const N = 72;
+    const rect = container.getBoundingClientRect();
+    const cx = rect.width/2;
+    const cy = rect.height/2;
+
+    const colors = [
+      "rgba(246,196,83,.98)",
+      "rgba(110,231,183,.98)",
+      "rgba(169,183,255,.98)",
+      "rgba(253,164,175,.98)",
+      "rgba(255,255,255,.98)"
+    ];
+
+    for (let i=0;i<N;i++){
+      const p = document.createElement("div");
+      p.className = "particle " + (Math.random() < 0.38 ? "spark" : "");
+      const size = rand(8, 18);
+      p.style.width = size + "px";
+      p.style.height = (p.classList.contains("spark") ? rand(6, 16) : size) + "px";
+      p.style.background = colors[Math.floor(Math.random()*colors.length)];
+
+      const x0 = cx + rand(-16, 16);
+      const y0 = cy + rand(-16, 16);
+
+      const x1 = cx + rand(-420, 420);
+      const y1 = cy + rand(-300, 300);
+
+      p.style.left = x0 + "px";
+      p.style.top = y0 + "px";
+      p.style.setProperty("--x0", `${x0}px`);
+      p.style.setProperty("--y0", `${y0}px`);
+      p.style.setProperty("--x1", `${x1}px`);
+      p.style.setProperty("--y1", `${y1}px`);
+
+      container.appendChild(p);
+    }
+
+    requestAnimationFrame(() => {
+      container.classList.add("boom");
+      setTimeout(() => {
+        container.classList.remove("boom");
+        container.querySelectorAll(".particle,.ring").forEach(n => n.remove());
+      }, 1250);
+    });
+  }
+
+  function scrambleLetters(word){
+    const letters = word.split("");
+    let out = shuffle([...letters]);
+    let tries = 0;
+    while (out.join("") === word && tries < 8){
+      out = shuffle([...letters]);
+      tries++;
+    }
+    return out;
+  }
+
+  function shuffle(arr){
+    for (let i=arr.length-1;i>0;i--){
+      const j = Math.floor(Math.random()*(i+1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  function rand(min,max){
+    return Math.floor(Math.random()*(max-min+1))+min;
+  }
+
+  function save(){
+    try{ localStorage.setItem(STORE, JSON.stringify(state)); } catch(e){}
+  }
+  function load(){
+    try{
+      const raw = localStorage.getItem(STORE);
+      return raw ? JSON.parse(raw) : null;
+    }catch(e){ return null; }
+  }
+})();
+</script>
+</body>
+</html>
